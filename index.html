@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skywatcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- Notification toast container -->
+<div id="toast-container"></div>
+
+<!-- Notification bell badge -->
+<div id="notif-bell" onclick="openPage('notifications')" title="Notifications">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  <span id="notif-badge" class="hidden">0</span>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">
+        <span class="logo-mark">S</span>
+        <span class="logo-text">Skywatcher</span>
+      </div>
+      <nav class="nav">
+        <a class="nav-item active" onclick="openPage('dashboard')" data-page="dashboard">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" onclick="openPage('alerts')" data-page="alerts">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          My Alerts
+        </a>
+        <a class="nav-item" onclick="openPage('locations')" data-page="locations">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Locations
+        </a>
+        <a class="nav-item" onclick="openPage('notifications')" data-page="notifications">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Notifications
+          <span id="nav-badge" class="nav-badge hidden">0</span>
+        </a>
+      </nav>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="poll-status">
+        <div class="poll-dot" id="poll-dot"></div>
+        <span id="poll-label">Polling every 15 min</span>
+      </div>
+      <button class="btn-poll" onclick="pollNow()">Check now</button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="page-sub" id="dash-location-label">Loading weather...</p>
+        </div>
+        <div class="header-actions">
+          <select id="dash-location-select" class="location-select" onchange="loadDashboardWeather()">
+            <option value="">Select location</option>
+          </select>
+          <button class="btn-icon" onclick="requestGPS()" title="Use my location">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="dash-loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Fetching weather data…</p>
+      </div>
+
+      <div id="dash-content" class="hidden">
+        <div class="weather-hero">
+          <div class="weather-main">
+            <div class="weather-temp" id="dash-temp">--</div>
+            <div class="weather-desc" id="dash-desc">--</div>
+            <div class="weather-loc" id="dash-loc-name">--</div>
+          </div>
+          <div class="weather-icon-wrap">
+            <img id="dash-icon" src="" alt="" class="weather-icon-img">
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Feels like</div>
+            <div class="metric-val" id="dash-feels">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Humidity</div>
+            <div class="metric-val" id="dash-humidity">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Wind</div>
+            <div class="metric-val" id="dash-wind">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Visibility</div>
+            <div class="metric-val" id="dash-visibility">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">UV Index</div>
+            <div class="metric-val" id="dash-uv">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Precipitation</div>
+            <div class="metric-val" id="dash-precip">--</div>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <span class="section-label">Active alerts for this location</span>
+        </div>
+        <div id="dash-alerts-list" class="dash-alerts"></div>
+      </div>
+
+      <div id="dash-empty" class="empty-state hidden">
+        <p>Add a location to see weather data.</p>
+        <button class="btn-primary" onclick="openPage('locations')">Add location</button>
+      </div>
+    </div>
+
+    <!-- ── ALERTS PAGE ── -->
+    <div id="page-alerts" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1>My Alerts</h1>
+          <p class="page-sub">Define conditions and get notified</p>
+        </div>
+        <button class="btn-primary" onclick="openAlertModal()">+ New alert</button>
+      </div>
+
+      <div id="alerts-list" class="alerts-list"></div>
+      <div id="alerts-empty" class="empty-state hidden">
+        <p>No alerts set up yet.</p>
+        <button class="btn-primary" onclick="openAlertModal()">Create your first alert</button>
+      </div>
+    </div>
+
+    <!-- ── LOCATIONS PAGE ── -->
+    <div id="page-locations" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1>Locations</h1>
+          <p class="page-sub">Manage places to monitor</p>
+        </div>
+      </div>
+
+      <div class="location-add-panel card">
+        <div class="card-section-label">Add a location</div>
+        <div class="location-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Display name</label>
+              <input type="text" id="loc-name" placeholder="Home, Work, NYC…">
+            </div>
+            <div class="form-group">
+              <label>Search query</label>
+              <input type="text" id="loc-query" placeholder="City name, zip code, coordinates">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="requestGPSForLocation()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+              Use my GPS location
+            </button>
+            <button class="btn-primary" onclick="addLocation()">Add location</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider">
+        <span class="section-label">Saved locations</span>
+      </div>
+      <div id="locations-list" class="locations-list"></div>
+    </div>
+
+    <!-- ── NOTIFICATIONS PAGE ── -->
+    <div id="page-notifications" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h1>Notifications</h1>
+          <p class="page-sub">Weather alerts triggered by your rules</p>
+        </div>
+        <button class="btn-secondary" onclick="markAllRead()">Mark all read</button>
+      </div>
+      <div id="notif-list" class="notif-list"></div>
+      <div id="notif-empty" class="empty-state hidden">
+        <p>No notifications yet. Alerts will appear here when conditions are met.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Alert Modal -->
+<div id="alert-modal" class="modal-backdrop hidden" onclick="closeAlertModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>New alert</h2>
+      <button class="modal-close" onclick="closeAlertModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Alert name</label>
+        <input type="text" id="modal-name" placeholder="e.g. Rain before my commute">
+      </div>
+
+      <div class="form-group">
+        <label>Location</label>
+        <select id="modal-location">
+          <option value="">Choose a location…</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Conditions to watch</label>
+        <div class="condition-tags" id="modal-conditions">
+          <div class="cond-tag" data-cond="rain">Rain</div>
+          <div class="cond-tag" data-cond="snow">Snow</div>
+          <div class="cond-tag" data-cond="high_temp">High temp</div>
+          <div class="cond-tag" data-cond="low_temp">Low temp</div>
+          <div class="cond-tag" data-cond="high_wind">High wind</div>
+          <div class="cond-tag" data-cond="thunderstorm">Thunderstorm</div>
+          <div class="cond-tag" data-cond="fog">Fog</div>
+          <div class="cond-tag" data-cond="uv">High UV</div>
+          <div class="cond-tag" data-cond="humidity">Humidity</div>
+        </div>
+      </div>
+
+      <div id="threshold-fields" class="threshold-group"></div>
+
+      <div class="form-group">
+        <label>Notify me <span id="advance-label">1 hour</span> in advance</label>
+        <input type="range" min="0.5" max="24" step="0.5" value="1" id="modal-advance"
+               oninput="updateAdvanceLabel(this.value)">
+        <div class="range-ends"><span>30 min</span><span>24 hrs</span></div>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="modal-browser" checked>
+          <span>Browser push notifications</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeAlertModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveAlert()">Save alert</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
